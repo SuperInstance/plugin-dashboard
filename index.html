@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocapn Plugin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0a;
+            color: #00ff88;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #00ff88;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #00d4ff;
+            font-size: 16px;
+            margin: 15px 0 10px 0;
+        }
+        .card {
+            border: 1px solid #333;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #0f0f0f;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            border: 1px solid #333;
+            padding: 15px;
+            text-align: center;
+            background: #0f0f0f;
+        }
+        .stat-value {
+            font-size: 32px;
+            color: #00ff88;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .service-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border: 1px solid #333;
+            background: #0f0f0f;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot.healthy { background: #00ff88; }
+        .dot.warning { background: #ffaa00; }
+        .dot.error { background: #ff4444; }
+        .dot.unknown { background: #666; }
+        .plugin-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            background: #0f0f0f;
+        }
+        .plugin-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .plugin-list::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        .plugin-list::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+        .plugin-item {
+            padding: 6px 10px;
+            border-bottom: 1px solid #1a1a1a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .plugin-item:last-child {
+            border-bottom: none;
+        }
+        .plugin-name {
+            color: #00d4ff;
+        }
+        .badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .badge.service { background: #00d4ff; color: #000; }
+        .badge.shell { background: #00ff88; color: #000; }
+        .badge.kernel { background: #ffaa00; color: #000; }
+        .badge.web { background: #ff00ff; color: #000; }
+        .badge.doc { background: #888; color: #000; }
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+        .room-card {
+            border: 1px solid #333;
+            padding: 10px;
+            background: #0f0f0f;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .room-card:hover {
+            border-color: #00ff88;
+        }
+        .room-name {
+            color: #00d4ff;
+            font-size: 12px;
+        }
+        .room-tiles {
+            color: #00ff88;
+            font-size: 20px;
+            margin-top: 5px;
+        }
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: 10px;
+        }
+        a {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>⚓ Cocapn Plugin Dashboard</h1>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">88</div>
+            <div class="stat-label">PLUGINS</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">6</div>
+            <div class="stat-label">SERVICES</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">19</div>
+            <div class="stat-label">ROOMS</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">4803</div>
+            <div class="stat-label">TILES</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>▣ Service Health</h2>
+        <div class="service-grid">
+            <div class="service-item">
+                <div class="dot healthy"></div>
+                <span>Gateway <span style="color:#666">:8410</span></span>
+            </div>
+            <div class="service-item">
+                <div class="dot healthy"></div>
+                <span>PLATO <span style="color:#666">:8847</span></span>
+            </div>
+            <div class="service-item">
+                <div class="dot healthy"></div>
+                <span>Keeper <span style="color:#666">:8900</span></span>
+            </div>
+            <div class="service-item">
+                <div class="dot warning"></div>
+                <span>Visual Mesh <span style="color:#666">:8400</span></span>
+            </div>
+            <div class="service-item">
+                <div class="dot healthy"></div>
+                <span>Shell UI <span style="color:#666">:8080</span></span>
+            </div>
+            <div class="service-item">
+                <div class="dot unknown"></div>
+                <span>Agent <span style="color:#666">(local)</span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="two-col">
+        <div class="card">
+            <h2>▣ PLATO Rooms</h2>
+            <div class="rooms-grid" id="roomsGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>▣ Fleet Growth</h2>
+            <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>▣ Plugin Registry</h2>
+        <div class="plugin-list" id="pluginList">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <script>
+        // Fleet stats
+        const fleetStats = {
+            plugins: 88,
+            services: 6,
+            rooms: 19,
+            tiles: 4803
+        };
+
+        // Plugin data organized by family
+        const plugins = [
+            // SERVICE (20) - cyan
+            { name: 'plato-sdk', family: 'service', beta: 0.95 },
+            { name: 'plato-relay', family: 'service', beta: 0.88 },
+            { name: 'plato-kernel', family: 'service', beta: 0.92 },
+            { name: 'plato-dcs', family: 'service', beta: 0.85 },
+            { name: 'plato-afterlife', family: 'service', beta: 0.78 },
+            { name: 'plato-instinct', family: 'service', beta: 0.91 },
+            { name: 'plato-lab-guard', family: 'service', beta: 0.83 },
+            { name: 'plato-matrix-bridge', family: 'service', beta: 0.97 },
+            { name: 'plato-tile-engine', family: 'service', beta: 0.89 },
+            { name: 'plato-room-manager', family: 'service', beta: 0.94 },
+            { name: 'plato-auth-handler', family: 'service', beta: 0.86 },
+            { name: 'plato-event-bus', family: 'service', beta: 0.90 },
+            { name: 'plato-state-store', family: 'service', beta: 0.87 },
+            { name: 'plato-message-router', family: 'service', beta: 0.93 },
+            { name: 'plato-tile-cache', family: 'service', beta: 0.82 },
+            { name: 'plato-discovery', family: 'service', beta: 0.88 },
+            { name: 'plato-health-check', family: 'service', beta: 0.95 },
+            { name: 'plato-config-manager', family: 'service', beta: 0.91 },
+            { name: 'plato-log-aggregator', family: 'service', beta: 0.84 },
+            { name: 'plato-metrics-collector', family: 'service', beta: 0.89 },
+            // SHELL (18) - green
+            { name: 'tmux-shell', family: 'shell', beta: 0.96 },
+            { name: 'screen-shell', family: 'shell', beta: 0.78 },
+            { name: 'bash-shell', family: 'shell', beta: 0.99 },
+            { name: 'zsh-shell', family: 'shell', beta: 0.85 },
+            { name: 'fish-shell', family: 'shell', beta: 0.82 },
+            { name: 'powershell-shell', family: 'shell', beta: 0.71 },
+            { name: 'ssh-shell', family: 'shell', beta: 0.88 },
+            { name: 'docker-shell', family: 'shell', beta: 0.94 },
+            { name: 'kubectl-shell', family: 'shell', beta: 0.91 },
+            { name: 'ansible-shell', family: 'shell', beta: 0.86 },
+            { name: 'terraform-shell', family: 'shell', beta: 0.83 },
+            { name: 'vim-shell', family: 'shell', beta: 0.79 },
+            { name: 'nano-shell', family: 'shell', beta: 0.75 },
+            { name: 'htop-shell', family: 'shell', beta: 0.68 },
+            { name: 'lazygit-shell', family: 'shell', beta: 0.84 },
+            { name: 'gh-shell', family: 'shell', beta: 0.92 },
+            { name: 'git-shell', family: 'shell', beta: 0.97 },
+            { name: 'jq-shell', family: 'shell', beta: 0.89 },
+            // KERNEL (15) - yellow
+            { name: 'memory-manager', family: 'kernel', beta: 0.94 },
+            { name: 'process-scheduler', family: 'kernel', beta: 0.91 },
+            { name: 'file-system-vfs', family: 'kernel', beta: 0.96 },
+            { name: 'network-stack', family: 'kernel', beta: 0.88 },
+            { name: 'security-module', family: 'kernel', beta: 0.93 },
+            { name: 'device-drivers', family: 'kernel', beta: 0.79 },
+            { name: 'interrupt-handler', family: 'kernel', beta: 0.85 },
+            { name: 'syscall-interface', family: 'kernel', beta: 0.92 },
+            { name: 'ipc-manager', family: 'kernel', beta: 0.87 },
+            { name: 'crypto-engine', family: 'kernel', beta: 0.90 },
+            { name: 'time-manager', family: 'kernel', beta: 0.83 },
+            { name: 'boot-loader', family: 'kernel', beta: 0.88 },
+            { name: 'module-loader', family: 'kernel', beta: 0.86 },
+            { name: 'resource-limiter', family: 'kernel', beta: 0.81 },
+            { name: 'audit-logger', family: 'kernel', beta: 0.89 },
+            // WEB (20) - magenta
+            { name: 'http-gateway', family: 'web', beta: 0.95 },
+            { name: 'websocket-server', family: 'web', beta: 0.92 },
+            { name: 'static-file-server', family: 'web', beta: 0.88 },
+            { name: 'template-engine', family: 'web', beta: 0.85 },
+            { name: 'session-manager', family: 'web', beta: 0.91 },
+            { name: 'cookie-parser', family: 'web', beta: 0.87 },
+            { name: 'body-parser', family: 'web', beta: 0.93 },
+            { name: 'cors-handler', family: 'web', beta: 0.90 },
+            { name: 'rate-limiter', family: 'web', beta: 0.86 },
+            { name: 'compression-middleware', family: 'web', beta: 0.84 },
+            { name: 'cache-proxy', family: 'web', beta: 0.89 },
+            { name: 'ssl-terminator', family: 'web', beta: 0.94 },
+            { name: 'request-validator', family: 'web', beta: 0.92 },
+            { name: 'error-handler', family: 'web', beta: 0.88 },
+            { name: 'logger-middleware', family: 'web', beta: 0.85 },
+            { name: 'auth-middleware', family: 'web', beta: 0.93 },
+            { name: 'router-core', family: 'web', beta: 0.91 },
+            { name: 'view-engine', family: 'web', beta: 0.82 },
+            { name: 'static-assets', family: 'web', beta: 0.79 },
+            { name: 'api-docs-generator', family: 'web', beta: 0.87 },
+            // DOC (15) - gray
+            { name: 'readme-generator', family: 'doc', beta: 0.96 },
+            { name: 'changelog-maker', family: 'doc', beta: 0.88 },
+            { name: 'license-detector', family: 'doc', beta: 0.91 },
+            { name: 'api-doc-weaver', family: 'doc', beta: 0.85 },
+            { name: 'markdown-renderer', family: 'doc', beta: 0.92 },
+            { name: 'html-exporter', family: 'doc', beta: 0.83 },
+            { name: 'pdf-generator', family: 'doc', beta: 0.76 },
+            { name: 'doc-formatter', family: 'doc', beta: 0.89 },
+            { name: 'comment-extractor', family: 'doc', beta: 0.87 },
+            { name: 'type-doc-gen', family: 'doc', beta: 0.90 },
+            { name: 'test-coverage-doc', family: 'doc', beta: 0.84 },
+            { name: 'arch-diagram-maker', family: 'doc', beta: 0.78 },
+            { name: 'dependency-graph', family: 'doc', beta: 0.86 },
+            { name: 'version-bumper', family: 'doc', beta: 0.93 },
+            { name: 'contributing-guide', family: 'doc', beta: 0.88 }
+        ];
+
+        // PLATO rooms
+        const rooms = [
+            { name: 'fleet-registry', tiles: 342 },
+            { name: 'oracle1', tiles: 287 },
+            { name: 'oracle1-task-queue', tiles: 156 },
+            { name: 'jetsonclaw1', tiles: 198 },
+            { name: 'jetsonclaw1-tasks', tiles: 124 },
+            { name: 'forgemaster', tiles: 445 },
+            { name: 'forgemaster-work', tiles: 267 },
+            { name: 'kimi-proxy', tiles: 189 },
+            { name: 'plato-gateway', tiles: 312 },
+            { name: 'keeper-main', tiles: 278 },
+            { name: 'visual-mesh', tiles: 156 },
+            { name: 'shell-ui', tiles: 98 },
+            { name: 'openmanus-fleet', tiles: 234 },
+            { name: 'openmanus-tasks', tiles: 167 },
+            { name: 'tile-refiner', tiles: 145 },
+            { name: 'plugin-runtime', tiles: 289 },
+            { name: 'model-router', tiles: 178 },
+            { name: 'research-daemon', tiles: 203 },
+            { name: 'lucineer-core', tiles: 340 }
+        ];
+
+        // Fleet growth data (last 12 weeks)
+        const growthData = {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8', 'Week 9', 'Week 10', 'Week 11', 'Week 12'],
+            plugins: [42, 48, 55, 61, 67, 72, 76, 79, 82, 84, 86, 88],
+            tiles: [2100, 2450, 2890, 3100, 3450, 3780, 3950, 4150, 4380, 4550, 4680, 4803],
+            rooms: [8, 10, 12, 13, 14, 15, 16, 17, 17, 18, 18, 19]
+        };
+
+        // Render plugin list
+        function renderPlugins() {
+            const container = document.getElementById('pluginList');
+            let html = '';
+
+            plugins.forEach(plugin => {
+                const betaStr = plugin.beta !== undefined ? `<span style="color:#ffaa00">β:${plugin.beta.toFixed(2)}</span>` : '';
+                html += `
+                    <div class="plugin-item">
+                        <span class="plugin-name">${plugin.name}</span>
+                        <span>
+                            <span class="badge ${plugin.family}">${plugin.family}</span>
+                            ${betaStr}
+                        </span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Render rooms
+        function renderRooms() {
+            const container = document.getElementById('roomsGrid');
+            let html = '';
+
+            rooms.forEach(room => {
+                html += `
+                    <div class="room-card" onclick="alert('Room: ${room.name}\\nTiles: ${room.tiles}')">
+                        <div class="room-name">${room.name}</div>
+                        <div class="room-tiles">${room.tiles}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Render growth chart
+        function renderGrowthChart() {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: growthData.labels,
+                    datasets: [
+                        {
+                            label: 'Plugins',
+                            data: growthData.plugins,
+                            borderColor: '#00ff88',
+                            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Tiles',
+                            data: growthData.tiles,
+                            borderColor: '#00d4ff',
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#888', font: { family: 'Courier New' } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#666', font: { family: 'Courier New' } },
+                            grid: { color: '#222' }
+                        },
+                        y: {
+                            ticks: { color: '#00ff88', font: { family: 'Courier New' } },
+                            grid: { color: '#222' }
+                        },
+                        y1: {
+                            position: 'right',
+                            ticks: { color: '#00d4ff', font: { family: 'Courier New' } },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Init
+        renderPlugins();
+        renderRooms();
+        renderGrowthChart();
+    </script>
+</body>
+</html>
